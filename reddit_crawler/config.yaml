@@ -1,0 +1,375 @@
+# Reddit Crawler for Insurance Pain Point Discovery
+# =================================================
+
+# Reddit 抓取配置
+reddit:
+  # === Tier 1: 核心保险子版块（高优先级，每次 50 帖） ===
+  core_subreddits:
+    - Insurance          # 92K subs — 综合保险讨论
+    - LifeInsurance      # 24K subs — 寿险
+    - HealthInsurance    # 27K subs — 健康险
+    - HomeInsurance      # 12K subs — 房险
+    - Medicare           # 19K subs — 联邦医保
+    - autoinsurance      # 8K subs — 车险
+    - RentersInsurance   # 3K subs — 租客险
+    - DisabilityInsurance # 2K subs — 残疾险
+    - DentalInsurance    # 2K subs — 牙科险
+
+  core_post_limit: 50
+
+  # === Tier 2: 消费者金融（保险高频话题，每次 30 帖，需关键词过滤） ===
+  adjacent_subreddits:
+    - personalfinance     # 19M subs — 个人理财（保险是核心话题）
+    - povertyfinance      # 2M subs — 低收入理财（保险可及性问题）
+    - MiddleClassFinance   # 600K subs — 中产理财
+    - FinancialPlanning   # 1.5M subs — 财务规划（寿险/退休）
+    - retirement          # 150K subs — 退休规划（Medicare/最终费用）
+    - RealEstate          # 600K subs — 房产（房险）
+    - homeowners          # 800K subs — 房主（房险/伞险）
+    - FirstTimeHomeBuyer  # 300K subs — 首次购房（首次购险）
+
+  adjacent_post_limit: 30
+
+  # === Tier 3: 自由职业/零工/小企业（每次 25 帖，需关键词过滤） ===
+  business_subreddits:
+    - freelance           # 500K subs — 自由职业者（自购保险）
+    - selfemployed        # 100K subs — 自雇人士
+    - smallbusiness       # 1.5M subs — 小企业主（商业险/责任险）
+    - Entrepreneur        # 2.5M subs — 创业者
+    - gigwork             # 30K subs — 零工经济
+    - UberEATS            # 50K subs — 外卖司机（车险问题）
+    - doordash_drivers    # 200K subs — 外卖司机（车险问题）
+    - RVLiving            # 100K subs — 房车生活（RV保险）
+
+  business_post_limit: 25
+
+  # === Tier 4: 特殊人群/法务/行业视角（每次 20 帖） ===
+  specialty_subreddits:
+    - Veterans            # 100K subs — 退伍军人（VA保险）
+    - expats              # 150K subs — 海外生活（国际保险）
+    - LegalAdvice         # 3M subs — 法律咨询（保险纠纷）
+    - InsuranceAgent      # 5K subs — 保险代理人（B2B洞察）
+    - insurance_agents    # 2K subs — 保险代理人社区
+    - landlord            # 200K subs — 房东（房东保险）
+    - latinos             # 拉丁裔社群（西语保险需求）
+    - DACA                # DACA 受助者（健康险/ACA 话题）
+
+  specialty_post_limit: 20
+
+  # 排序方式: hot, new, top, rising
+  sort: hot
+
+  # 请求间隔（秒）
+  request_delay: 2
+
+  # 在非核心子版块中过滤帖子的关键词
+  search_keywords:
+    - insurance
+    - life insurance
+    - health insurance
+    - car insurance
+    - auto insurance
+    - home insurance
+    - renters insurance
+    - pet insurance
+    - medicare
+    - medicaid
+    - disability insurance
+    - term life
+    - whole life
+    - premium
+    - deductible
+    - coverage
+    - claim denied
+    - insurance cost
+    - dental insurance
+    - travel insurance
+    - business insurance
+    - liability insurance
+    - umbrella insurance
+    - RV insurance
+    - landlord insurance
+    - VA benefits
+    - expat insurance
+    # 西班牙语保险关键词（监控英文 sub 中的西语讨论）
+    - seguro
+    - seguros
+    - aseguranza
+    - seguro de vida
+    - seguro médico
+    - seguro de auto
+    - seguro de casa
+    - cobertura
+    - deducible
+    - prima
+    - reclamación
+    - Medicare en español
+    - Obamacare en español
+    - ACA español
+
+# 代理配置
+proxy:
+  socks5: socks5h://127.0.0.1:1080
+  enabled: true
+
+# 用户代理（模拟浏览器）
+user_agent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+
+# 数据库
+database:
+  path: data/reddit_crawler.db
+
+# 报告
+reports:
+  output_dir: reports
+  formats:
+    - markdown
+  daily_summary: true
+
+# LLM 配置（本地模型，OpenAI 兼容 API）
+llm:
+  enabled: true
+  base_url: "http://192.168.50.200:8080/v1"
+  model: "/Users/manson/qwen_unsensored/Qwen3.6-35B-A3B-Uncensored-HauhauCS-Aggressive-OptiQ-4bit-MLX"
+  max_tokens: 300
+  temperature: 0.3
+
+# 日志
+logging:
+  level: INFO
+  file: logs/crawler.log
+  max_bytes: 10485760  # 10MB
+  backup_count: 5
+
+# YouTube 爬取配置
+youtube:
+  enabled: true
+  api_key: "AIzaSyCqtG7M6L0YasfBpK9z-Y5lgXS6KeL3Djc"
+
+  # 西语保险搜索关键词
+  spanish_keywords:
+    - seguro de vida cuanto necesito
+    - seguro medico para inmigrantes
+    - cuanto cuesta un seguro de auto
+    - seguro de casa precios
+    - medicare en espanol
+    - seguro para mascotas precios
+    - seguro de incapacidad
+    - seguro de renta
+    - seguro de vida para padres
+    - comparativa seguros de auto
+
+  # 英文保险搜索关键词（交叉验证）
+  english_keywords:
+    - how much life insurance do i need
+    - health insurance for immigrants
+    - car insurance cost calculator
+    - home insurance explained
+    - pet insurance worth it
+    - disability insurance guide
+    - renters insurance explained
+    - life insurance for seniors
+    - insurance for self employed
+
+  max_videos_per_keyword: 10
+  max_comments_per_video: 50
+
+# Quora 内容发现（通过 DuckDuckGo 搜索）
+quora:
+  enabled: true
+  spanish_keywords:
+    - seguro de vida cuanto necesito
+    - seguro medico para inmigrantes
+    - cuanto cuesta seguro de auto
+    - seguro de casa precios
+    - medicare en espanol explicacion
+    - seguro para mascotas vale la pena
+    - seguro de incapacidad como funciona
+    - seguro de renta es obligatorio
+    - DACA health insurance options
+    - immigrant health insurance USA
+
+  english_keywords:
+    - how much life insurance do I need
+    - health insurance options explained
+    - car insurance cost factors
+    - home insurance coverage guide
+    - pet insurance worth it reddit
+    - disability insurance explained
+
+  max_results_per_keyword: 10
+
+# Google Trends + 多站搜索
+trends:
+  enabled: true
+  geo: US
+  timeframe: today 12-m
+
+  keyword_groups:
+    # 寿险
+    life_insurance:
+      - life insurance calculator
+      - term life insurance
+      - whole life insurance
+      - how much life insurance do I need
+      - seguro de vida
+      - seguro de vida cuanto necesito
+    # 健康险
+    health_insurance:
+      - health insurance
+      - health insurance for immigrants
+      - ACA health insurance
+      - seguro medico
+      - seguro medico para inmigrantes
+      - Obamacare
+    # 车险
+    auto_insurance:
+      - car insurance
+      - auto insurance quotes
+      - cheap car insurance
+      - seguro de auto
+      - cuanto cuesta seguro de auto
+    # 房险
+    home_insurance:
+      - home insurance
+      - homeowners insurance
+      - renters insurance
+      - seguro de casa
+      - seguro de hogar
+    # 医保
+    medicare:
+      - medicare
+      - medicare advantage
+      - medicare part D
+      - medicaid
+      - medicare en espanol
+    # 宠物险
+    pet_insurance:
+      - pet insurance
+      - best pet insurance
+      - dog insurance
+      - seguro para mascotas
+    # 新兴/趋势
+    emerging:
+      - cyber insurance
+      - gig economy insurance
+      - parametric insurance
+      - drone insurance
+      - burial insurance
+      - final expense insurance
+
+# 关键词痛点分析（LLM 不可用时的 fallback）
+pain_point_analysis:
+  keywords:
+    denied:
+      - claim denied
+      - was denied
+      - got denied
+      - rejection
+      - rejected
+      - won't cover
+      - not covered
+      - denied coverage
+    cost:
+      - too expensive
+      - can't afford
+      - premium increase
+      - premium went up
+      - price hike
+      - overpriced
+      - rip off
+      - hidden fees
+      - unexpected charge
+    confusion:
+      - don't understand
+      - confusing
+      - doesn't make sense
+      - what does this mean
+      - how does
+      - need help understanding
+      - someone explain
+      - complicated
+    service:
+      - terrible service
+      - bad experience
+      - never responded
+      - customer service
+      - hours on hold
+      - impossible to reach
+      - no one answers
+    coverage_gap:
+      - not enough coverage
+      - underinsured
+      - gap in coverage
+      - doesn't cover
+      - exclusion
+      - pre-existing
+      - pre existing
+      - waiting period
+    shopping:
+      - which insurance
+      - best insurance
+      - compare insurance
+      - recommended insurance
+      - insurance for
+      - how to get insurance
+      - where to buy
+      - insurance quote
+  categories:
+    life_insurance:
+      - life insurance
+      - term life
+      - whole life
+      - universal life
+      - life policy
+      - beneficiary
+      - death benefit
+    health_insurance:
+      - health insurance
+      - health plan
+      - medical insurance
+      - ACA
+      - Obamacare
+      - marketplace plan
+    auto_insurance:
+      - car insurance
+      - auto insurance
+      - vehicle insurance
+      - SR-22
+      - auto policy
+    home_insurance:
+      - home insurance
+      - homeowners insurance
+      - house insurance
+      - property insurance
+      - dwelling coverage
+    pet_insurance:
+      - pet insurance
+      - dog insurance
+      - cat insurance
+      - vet insurance
+      - veterinary insurance
+    disability_insurance:
+      - disability insurance
+      - income protection
+      - short term disability
+      - long term disability
+    medicare:
+      - medicare
+      - medicaid
+      - medicare advantage
+      - part D
+      - medicare supplement
+      - medigap
+    spanish_insurance:
+      - seguro
+      - seguros
+      - aseguranza
+      - seguro de vida
+      - seguro médico
+      - seguro de auto
+      - cobertura
+      - deducible
+      - DACA health
+      - immigrant insurance
+      - inmigrante
