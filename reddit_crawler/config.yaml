@@ -373,3 +373,388 @@ pain_point_analysis:
       - DACA health
       - immigrant insurance
       - inmigrante
+
+# 英/西双语美国保险知识库
+# 用途：把 Reddit/YouTube/Quora 痛点映射到权威保险知识、政策来源和未来网站内容机会。
+knowledge_base:
+  enabled: true
+  max_results_per_query: 3
+  request_delay: 0.8
+  pain_point_limit: 1200
+
+  # 默认只搜索官方/准官方来源；商业竞品只适合趋势观察，不作为知识库主来源。
+  authoritative_domains:
+    - content.naic.org
+    - healthcare.gov
+    - cuidadodesalud.gov
+    - medicare.gov
+    - es.medicare.gov
+    - irs.gov
+    - fema.gov
+    - sba.gov
+    - consumer.ftc.gov
+    - consumerfinance.gov
+    - usa.gov
+
+  topics:
+    - slug: insurance_terms
+      name_en: Insurance Terms and Policy Basics
+      name_es: Términos básicos de seguros
+      priority: 10
+      niche_tier: Tier 1
+      audience: First-time insurance shoppers, bilingual users
+      site_asset: bilingual glossary + policy reading checklist
+      description_en: Plain-language definitions for premiums, deductibles, limits, exclusions, riders, claims, and beneficiaries.
+      description_es: Definiciones claras sobre prima, deducible, limites, exclusiones, reclamaciones y beneficiarios.
+      pain_keywords: [insurance term, premium, deductible, coverage, exclusion, limit, rider, beneficiary, policy, confusing, seguro, deducible, cobertura, prima, reclamacion]
+      domains: [content.naic.org]
+      search_queries:
+        - insurance glossary consumer terms
+        - seguro glosario terminos de seguros
+      curated_sources:
+        - title: NAIC Consumer Resources
+          url: https://content.naic.org/consumer
+          lang: en
+          source_type: consumer_portal
+          authority: NAIC
+
+    - slug: life_insurance
+      name_en: Life Insurance Needs and Policy Types
+      name_es: Necesidades y tipos de seguro de vida
+      priority: 20
+      niche_tier: Tier 1
+      audience: Families, parents, seniors' adult children, Spanish-speaking households
+      site_asset: DIME/HLV calculator + term vs whole explainer
+      description_en: Life insurance need estimates, term/whole/universal differences, beneficiaries, death benefits, and policy locator workflows.
+      description_es: Estimaciones de necesidad de seguro de vida, diferencias entre temporal/permanente, beneficiarios y beneficios por fallecimiento.
+      pain_keywords: [life insurance, term life, whole life, universal life, death benefit, beneficiary, DIME, HLV, final expense, burial insurance, seguro de vida, beneficiario]
+      domains: [content.naic.org, usa.gov]
+      search_queries:
+        - life insurance buyer guide how much coverage
+        - life insurance policy locator beneficiary
+        - seguro de vida beneficiario guia
+      curated_sources:
+        - title: NAIC Life Insurance Buyer's Guide
+          url: https://content.naic.org/sites/default/files/publication-lig-lp-consumer-life.pdf
+          lang: en
+          source_type: guide_pdf
+          authority: NAIC
+
+    - slug: final_expense
+      name_en: Final Expense and Funeral Planning
+      name_es: Gastos finales y planificación funeraria
+      priority: 25
+      niche_tier: Tier 1
+      audience: Seniors, adult children, families planning funeral costs
+      site_asset: funeral cost estimator + final expense checklist
+      description_en: Funeral price rights, burial/cremation cost components, prepaid funeral plans, and final expense coverage framing.
+      description_es: Derechos de precios funerarios, costos de entierro/cremacion, planes prepagados y cobertura de gastos finales.
+      pain_keywords: [funeral, burial, cremation, final expense, funeral cost, burial insurance, prepaid funeral, death benefit, funeral home, gastos finales, funeral]
+      domains: [consumer.ftc.gov, content.naic.org, usa.gov]
+      search_queries:
+        - funeral costs pricing checklist final expense insurance
+        - FTC Funeral Rule prepaid funeral life insurance
+        - beneficios fallecimiento seguro de vida gastos funerarios
+      curated_sources:
+        - title: FTC Funeral Costs and Pricing Checklist
+          url: https://consumer.ftc.gov/articles/funeral-costs-pricing-checklist
+          lang: en
+          source_type: consumer_guide
+          authority: FTC
+        - title: FTC Funeral Rule
+          url: https://consumer.ftc.gov/articles/ftc-funeral-rule
+          lang: en
+          source_type: regulation_guide
+          authority: FTC
+
+    - slug: health_aca
+      name_en: ACA Marketplace and Health Insurance Costs
+      name_es: Mercado ACA y costos de seguro médico
+      priority: 30
+      niche_tier: Tier 1
+      audience: Individuals, families, self-employed workers
+      site_asset: ACA subsidy checker + plan metal tier explainer
+      description_en: Marketplace eligibility, premiums, cost-sharing reductions, premium tax credits, self-employed coverage, and plan categories.
+      description_es: Elegibilidad del Mercado, primas, reducciones de costos compartidos, credito fiscal de prima y categorias de planes.
+      pain_keywords: [health insurance, ACA, Obamacare, marketplace, premium tax credit, subsidy, silver plan, deductible, self-employed, seguro medico, Obamacare, mercado, subsidio]
+      domains: [healthcare.gov, cuidadodesalud.gov, irs.gov]
+      search_queries:
+        - ACA Marketplace premium tax credit cost sharing reductions
+        - self employed health insurance Marketplace
+        - seguro medico mercado subsidio Obamacare
+      curated_sources:
+        - title: HealthCare.gov - Save on Monthly Premiums
+          url: https://www.healthcare.gov/lower-costs/save-on-monthly-premiums
+          lang: en
+          source_type: policy_guide
+          authority: CMS
+        - title: IRS Premium Tax Credit Overview
+          url: https://www.irs.gov/credits-deductions/premium-tax-credit
+          lang: en
+          source_type: tax_policy
+          authority: IRS
+
+    - slug: immigrant_health
+      name_en: Immigrant and DACA Health Coverage
+      name_es: Cobertura médica para inmigrantes y DACA
+      priority: 35
+      niche_tier: Tier 1
+      audience: Immigrant households, DACA-adjacent readers, mixed-status families
+      site_asset: immigrant coverage eligibility guide + Spanish FAQ
+      description_en: Marketplace eligibility by immigration status, mixed-status family applications, community health alternatives, and policy-date caveats.
+      description_es: Elegibilidad del Mercado por estatus migratorio, familias con estatus mixto, alternativas comunitarias y cambios de politica.
+      pain_keywords: [immigrant, immigration status, DACA, undocumented, mixed status, lawfully present, health insurance for immigrants, inmigrante, indocumentado, estatus migratorio]
+      domains: [healthcare.gov, cuidadodesalud.gov]
+      search_queries:
+        - health coverage immigrants immigration status Marketplace DACA
+        - mixed status families Marketplace health coverage
+        - seguro medico para inmigrantes estatus migratorio
+      curated_sources:
+        - title: HealthCare.gov - Health Coverage for Immigrants
+          url: https://www.healthcare.gov/immigrants/coverage/
+          lang: en
+          source_type: policy_guide
+          authority: CMS
+        - title: HealthCare.gov - Immigration Status and Marketplace Coverage
+          url: https://www.healthcare.gov/immigrants/immigration-status/
+          lang: en
+          source_type: eligibility_guide
+          authority: CMS
+
+    - slug: medicare
+      name_en: Medicare Basics and Plan Choices
+      name_es: Conceptos básicos y opciones de Medicare
+      priority: 40
+      niche_tier: Tier 1
+      audience: People approaching 65, caregivers, bilingual Medicare users
+      site_asset: Medicare pathfinder + Original vs Advantage comparison
+      description_en: Medicare Parts A/B/C/D, Medigap, enrollment timing, costs, plan choice, fraud protection, and Spanish-language access.
+      description_es: Partes A/B/C/D, Medigap, periodos de inscripcion, costos, eleccion de planes, fraude y acceso en espanol.
+      pain_keywords: [Medicare, Medicaid, Medicare Advantage, Part D, Medigap, supplement, open enrollment, medicare en espanol, Parte D]
+      domains: [medicare.gov, es.medicare.gov]
+      search_queries:
+        - Medicare basics Original Medicare Medicare Advantage Part D Medigap
+        - Medicare and You handbook Spanish
+        - medicare en espanol como funciona
+      curated_sources:
+        - title: Medicare.gov - Medicare Basics
+          url: https://www.medicare.gov/basics
+          lang: en
+          source_type: official_guide
+          authority: Medicare
+        - title: Medicare.gov - Medicare & You Handbook
+          url: https://www.medicare.gov/medicare-and-you
+          lang: en
+          source_type: handbook
+          authority: Medicare
+        - title: es.Medicare.gov - Como funciona Medicare
+          url: https://es.medicare.gov/basics/get-started-with-medicare/medicare-basics/how-does-medicare-work
+          lang: es
+          source_type: official_guide
+          authority: Medicare
+
+    - slug: auto_insurance
+      name_en: Auto Insurance Coverage and Cost Factors
+      name_es: Coberturas y costos de seguro de auto
+      priority: 50
+      niche_tier: Tier 1
+      audience: Drivers, rideshare/delivery workers, first-time car buyers
+      site_asset: auto coverage checklist + cost factor explainer
+      description_en: Liability, collision, comprehensive, uninsured motorist, deductibles, rating factors, telematics, and gig-use coverage gaps.
+      description_es: Responsabilidad civil, colision, cobertura amplia, conductores sin seguro, deducibles, factores de precio y brechas para trabajo por app.
+      pain_keywords: [car insurance, auto insurance, liability, collision, comprehensive, uninsured motorist, SR-22, rideshare, delivery driver, seguro de auto]
+      domains: [content.naic.org]
+      search_queries:
+        - auto insurance consumer shopping tool liability collision comprehensive
+        - usage based auto insurance telematics consumer
+        - seguro de auto cobertura deducible
+      curated_sources:
+        - title: NAIC Auto Insurance Topic
+          url: https://content.naic.org/insurance-topics/auto-insurance
+          lang: en
+          source_type: insurance_topic
+          authority: NAIC
+        - title: NAIC Consumer Auto Insurance
+          url: https://content.naic.org/consumer/auto-insurance.htm
+          lang: en
+          source_type: consumer_guide
+          authority: NAIC
+
+    - slug: home_renters_flood
+      name_en: Homeowners, Renters, and Flood Insurance
+      name_es: Seguro de vivienda, inquilinos e inundación
+      priority: 60
+      niche_tier: Tier 2
+      audience: Homeowners, renters, landlords, first-time homebuyers
+      site_asset: home/renters/flood coverage gap checklist
+      description_en: Dwelling coverage, personal property, liability, additional living expenses, flood exclusions, FEMA flood risk, and escrow basics.
+      description_es: Cobertura de vivienda, propiedad personal, responsabilidad, gastos de vivienda temporal, exclusiones por inundacion y riesgo FEMA.
+      pain_keywords: [home insurance, homeowners insurance, renters insurance, landlord insurance, dwelling, ALE, additional living expenses, flood, FEMA, escrow, seguro de casa, inquilinos, inundacion]
+      domains: [content.naic.org, fema.gov, consumerfinance.gov]
+      search_queries:
+        - homeowners insurance consumer guide additional living expenses
+        - flood insurance homeowners renters FEMA NFIP
+        - seguro de inundacion propietarios inquilinos
+      curated_sources:
+        - title: NAIC Consumer Guide to Home Insurance
+          url: https://content.naic.org/sites/default/files/publication-hoi-pp-consumer-homeowners.pdf
+          lang: en
+          source_type: guide_pdf
+          authority: NAIC
+        - title: FEMA Flood Insurance
+          url: https://www.fema.gov/flood-insurance
+          lang: en
+          source_type: official_guide
+          authority: FEMA
+        - title: FEMA Seguro de Inundacion
+          url: https://www.fema.gov/es/flood-insurance
+          lang: es
+          source_type: official_guide
+          authority: FEMA
+        - title: CFPB Homeowners Insurance
+          url: https://www.consumerfinance.gov/ask-cfpb/what-is-homeowners-insurance-why-is-homeowners-insurance-required-en-162/
+          lang: en
+          source_type: consumer_qna
+          authority: CFPB
+
+    - slug: pet_insurance
+      name_en: Pet Insurance
+      name_es: Seguro para mascotas
+      priority: 70
+      niche_tier: Tier 1
+      audience: Dog/cat owners comparing accident, illness, and wellness coverage
+      site_asset: breed/scenario pet insurance comparison matrix
+      description_en: Accident-only, accident and illness, wellness coverage, pre-existing conditions, reimbursement, waiting periods, and age limits.
+      description_es: Cobertura por accidentes, enfermedad, bienestar, condiciones preexistentes, reembolsos, periodos de espera y limites de edad.
+      pain_keywords: [pet insurance, dog insurance, cat insurance, vet bill, pre-existing, wellness plan, reimbursement, waiting period, seguro para mascotas]
+      domains: [content.naic.org]
+      search_queries:
+        - pet insurance preexisting conditions waiting period reimbursement NAIC
+        - pet insurance model act consumer protections
+        - seguro para mascotas condiciones preexistentes
+      curated_sources:
+        - title: NAIC Pet Insurance Topic
+          url: https://content.naic.org/cipr-topics/pet-insurance
+          lang: en
+          source_type: insurance_topic
+          authority: NAIC
+
+    - slug: disability_insurance
+      name_en: Disability Insurance and Income Protection
+      name_es: Seguro de incapacidad y protección de ingresos
+      priority: 80
+      niche_tier: Tier 2
+      audience: Workers, self-employed people, families dependent on earned income
+      site_asset: disability income gap estimator
+      description_en: Short-term vs long-term disability, workers' compensation differences, benefit periods, elimination periods, and evidence requirements.
+      description_es: Diferencias entre incapacidad a corto/largo plazo, compensacion laboral, periodos de beneficio, espera y evidencia medica.
+      pain_keywords: [disability insurance, short term disability, long term disability, income protection, SSDI, SSI, FMLA, incapacidad]
+      domains: [content.naic.org, ssa.gov]
+      search_queries:
+        - disability insurance long term short term consumer guide
+        - disability insurance workers compensation difference
+        - seguro de incapacidad ingresos
+      curated_sources:
+        - title: NAIC Disability Insurance Consumer Insight
+          url: https://content.naic.org/article/consumer-insight-simplifying-complications-disability-insurance
+          lang: en
+          source_type: consumer_insight
+          authority: NAIC
+
+    - slug: business_liability
+      name_en: Small Business Insurance and Liability
+      name_es: Seguro para pequeños negocios y responsabilidad civil
+      priority: 90
+      niche_tier: Tier 2
+      audience: Freelancers, small business owners, consultants, home-based businesses
+      site_asset: small business insurance needs checklist
+      description_en: General liability, professional liability, product liability, workers' compensation, commercial property, and home-based business gaps.
+      description_es: Responsabilidad general/profesional/productos, compensacion laboral, propiedad comercial y brechas para negocios en casa.
+      pain_keywords: [business insurance, general liability, professional liability, errors and omissions, E&O, workers compensation, commercial property, small business, freelance, self-employed]
+      domains: [sba.gov, content.naic.org]
+      search_queries:
+        - small business insurance general liability professional liability SBA
+        - home based business insurance liability
+        - seguro para negocio responsabilidad civil
+      curated_sources:
+        - title: SBA Get Business Insurance
+          url: https://www.sba.gov/business-guide/launch-your-business/get-business-insurance
+          lang: en
+          source_type: official_guide
+          authority: SBA
+
+    - slug: gig_worker_insurance
+      name_en: Gig Worker and Sharing Economy Insurance
+      name_es: Seguro para trabajadores de plataformas
+      priority: 100
+      niche_tier: Tier 2
+      audience: Rideshare drivers, delivery drivers, freelancers, app-based workers
+      site_asset: gig coverage gap decision tree
+      description_en: Personal vs commercial auto gaps, rideshare periods, delivery exclusions, self-employed health coverage, and liability needs.
+      description_es: Brechas entre auto personal/comercial, periodos de rideshare, exclusiones de delivery, salud para independientes y responsabilidad.
+      pain_keywords: [gig worker, Uber, Lyft, Doordash, rideshare, delivery driver, personal auto, commercial auto, self-employed, independent contractor]
+      domains: [content.naic.org, healthcare.gov, sba.gov]
+      search_queries:
+        - sharing economy insurance rideshare delivery coverage gap
+        - self employed health insurance independent contractor
+        - seguro para Uber delivery contratista independiente
+      curated_sources:
+        - title: HealthCare.gov Self-Employed Coverage
+          url: https://www.healthcare.gov/self-employed/coverage/index.html
+          lang: en
+          source_type: official_guide
+          authority: CMS
+
+    - slug: insurance_scams
+      name_en: Insurance Scams and Fraud Prevention
+      name_es: Estafas de seguros y prevención de fraude
+      priority: 110
+      niche_tier: Tier 1
+      audience: Medicare users, health insurance shoppers, seniors, Spanish-speaking households
+      site_asset: scam red flag checklist + official verification links
+      description_en: Health insurance scams, Medicare impersonation, fake discount plans, lead-generation risks, and official reporting paths.
+      description_es: Estafas de seguro medico, suplantacion de Medicare, planes de descuento falsos, riesgos de formularios de leads y reportes oficiales.
+      pain_keywords: [scam, fraud, fake insurance, misleading, robocall, Medicare number, discount plan, health insurance scam, estafa, fraude]
+      domains: [consumer.ftc.gov, content.naic.org, medicare.gov]
+      search_queries:
+        - health insurance scams Medicare discount plans FTC
+        - insurance fraud consumer warning NAIC
+        - estafas de seguro medico Medicare
+      curated_sources:
+        - title: FTC Spot Health Insurance Scams
+          url: https://consumer.ftc.gov/articles/spot-health-insurance-scams-0
+          lang: en
+          source_type: scam_guide
+          authority: FTC
+        - title: NAIC Insurance Fraud Topic
+          url: https://content.naic.org/cipr-topics/insurance-fraud
+          lang: en
+          source_type: insurance_topic
+          authority: NAIC
+
+    - slug: claims_appeals
+      name_en: Claims, Denials, and Complaints
+      name_es: Reclamaciones, denegaciones y quejas
+      priority: 120
+      niche_tier: Tier 1
+      audience: Consumers facing claim delays, denials, or poor service
+      site_asset: claim documentation checklist + DOI complaint path
+      description_en: Claim documentation, delays, denials, complaint preparation, state Department of Insurance escalation, and carrier complaint research.
+      description_es: Documentacion de reclamaciones, retrasos, denegaciones, preparacion de quejas, escalamiento al departamento estatal y busqueda de quejas.
+      pain_keywords: [claim denied, denied claim, appeal, complaint, adjuster, delay, settlement, not covered, won't cover, reclamacion, queja, denegado]
+      domains: [content.naic.org, usa.gov]
+      search_queries:
+        - file complaint insurance carrier denied claim state department insurance
+        - insurance claim denied complaint consumer guide
+        - queja reclamacion seguro denegada
+      curated_sources:
+        - title: NAIC File a Complaint Against an Insurance Carrier
+          url: https://content.naic.org/index.php/article/how-file-complaint-and-research-complaints-against-insurance-carriers
+          lang: en
+          source_type: complaint_guide
+          authority: NAIC
+        - title: NAIC Consumer Portal
+          url: https://content.naic.org/consumer
+          lang: en
+          source_type: consumer_portal
+          authority: NAIC

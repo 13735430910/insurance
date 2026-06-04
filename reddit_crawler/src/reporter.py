@@ -2,6 +2,7 @@
 Report generator — creates Markdown summary reports from pain point data.
 """
 import logging
+from collections import Counter
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -132,6 +133,105 @@ class Reporter:
         logger.info(f"Reports saved: {brief_path}, {detail_path}")
         return content
 
+    def generate_knowledge_base_report(self, db, date_str: str = None) -> str:
+        """Generate a Markdown index for the bilingual insurance knowledge base."""
+        if date_str is None:
+            date_str = datetime.utcnow().strftime("%Y-%m-%d")
+
+        stats = db.get_knowledge_stats()
+        topics = db.get_knowledge_topics()
+
+        lines = []
+        lines.append(f"# Insurance Knowledge Base Index - {date_str}")
+        lines.append("")
+        lines.append("> Bilingual EN/ES research index built from social pain points and authoritative sources.")
+        lines.append("")
+        lines.append("## Overview")
+        lines.append("")
+        lines.append("| Metric | Value |")
+        lines.append("|--------|-------|")
+        lines.append(f"| Topics | {stats['topics']} |")
+        lines.append(f"| Sources | {stats['sources']} |")
+        lines.append(f"| Pain point links | {stats['pain_links']} |")
+        if stats.get("sources_by_lang"):
+            lang_counts = ", ".join(f"{lang or 'unknown'}: {cnt}" for lang, cnt in stats["sources_by_lang"])
+            lines.append(f"| Source languages | {lang_counts} |")
+        lines.append("")
+
+        lines.append("## Topic Map")
+        lines.append("")
+        lines.append("| Priority | Topic | ES Label | Pain Links | Sources | Site Asset |")
+        lines.append("|----------|-------|----------|------------|---------|------------|")
+        for topic in topics:
+            lines.append(
+                f"| {topic.get('priority', '')} | {topic['name_en']} | "
+                f"{topic.get('name_es', '')} | {topic.get('pain_link_count', 0)} | "
+                f"{topic.get('source_count', 0)} | {topic.get('site_asset', '')} |"
+            )
+        lines.append("")
+
+        for topic in topics:
+            sources = db.get_knowledge_sources(topic["slug"], limit=20)
+            pain_links = db.get_knowledge_pain_links(topic["slug"], limit=12)
+            categories = Counter(p.get("pain_category", "other") for p in pain_links)
+
+            lines.append(f"## {topic['name_en']}")
+            if topic.get("name_es"):
+                lines.append(f"**Spanish label:** {topic['name_es']}")
+            if topic.get("description_en"):
+                lines.append("")
+                lines.append(topic["description_en"])
+            if topic.get("audience") or topic.get("site_asset"):
+                lines.append("")
+                lines.append(f"- **Audience:** {topic.get('audience', '')}")
+                lines.append(f"- **Recommended site asset:** {topic.get('site_asset', '')}")
+                lines.append(f"- **Niche tier:** {topic.get('niche_tier', '')}")
+            lines.append("")
+
+            if categories:
+                lines.append("### Pain Signals")
+                for category, count in categories.most_common():
+                    lines.append(f"- {self._category_label(category)}: {count}")
+                lines.append("")
+
+            if pain_links:
+                lines.append("### Representative Questions")
+                for item in pain_links[:5]:
+                    prefix = item.get("platform", "?")
+                    sev = item.get("severity", "?")
+                    excerpt = (item.get("excerpt") or item.get("title") or "").replace("\n", " ")
+                    lines.append(f"- [{prefix}/{sev}] {excerpt[:220]}")
+                lines.append("")
+
+            opportunities = self._knowledge_content_opportunities(topic, pain_links)
+            if opportunities:
+                lines.append("### Content Opportunities")
+                for item in opportunities:
+                    lines.append(f"- {item}")
+                lines.append("")
+
+            if sources:
+                lines.append("### Source Shelf")
+                for source in sources[:10]:
+                    lang = source.get("lang") or "?"
+                    trust = source.get("trust_level") or "source"
+                    origin = source.get("source_origin") or "curated"
+                    lines.append(
+                        f"- [{lang}/{trust}/{origin}] [{source['title']}]({source['url']})"
+                    )
+                lines.append("")
+
+        lines.append("---")
+        lines.append(f"*Knowledge base generated: {datetime.utcnow().isoformat()} UTC*")
+
+        content = "\n".join(lines)
+        kb_dir = self.output_dir / "knowledge_base"
+        kb_dir.mkdir(parents=True, exist_ok=True)
+        path = kb_dir / f"{date_str}_knowledge_base.md"
+        path.write_text(content, encoding="utf-8")
+        logger.info(f"Knowledge base report saved: {path}")
+        return str(path)
+
     def _generate_brief(self, stats: dict, summary: dict, pain_points: list, date_str: str) -> str:
         """Generate a brief summary for quick scanning."""
         lines = []
@@ -164,11 +264,52 @@ class Reporter:
     def _category_label(self, category: str) -> str:
         """Human-readable category label."""
         labels = {
+            "claim_denied": "Claim Denied",
             "denied": "Claim Denied",
             "cost": "Cost Concerns",
             "confusion": "Confusion",
             "service": "Poor Service",
             "coverage_gap": "Coverage Gap",
             "shopping": "Shopping/Comparison",
+            "fraud": "Fraud/Scam",
+            "other": "Other",
         }
         return labels.get(category, category.replace("_", " ").title())
+
+    def _knowledge_content_opportunities(self, topic: dict, pain_links: list) -> list:
+        base_asset = topic.get("site_asset") or "consumer guide"
+        categories = Counter(p.get("pain_category", "other") for p in pain_links)
+        if not categories:
+            return [f"Build a bilingual {base_asset} anchored in official sources."]
+
+        ideas = []
+        for category, _count in categories.most_common(4):
+            if category in ("claim_denied", "denied"):
+                ideas.append(
+                    f"Add a claims and appeals section to the {base_asset}, including state DOI complaint paths."
+                )
+            elif category == "cost":
+                ideas.append(
+                    f"Add premium, deductible, subsidy, and tradeoff examples to the {base_asset}."
+                )
+            elif category == "confusion":
+                ideas.append(
+                    f"Add bilingual glossary callouts and examples for the terms users misunderstand most."
+                )
+            elif category == "coverage_gap":
+                ideas.append(
+                    "Add a coverage-gap checklist showing covered, excluded, and optional add-on items."
+                )
+            elif category == "shopping":
+                ideas.append(
+                    "Add a quote-readiness worksheet and comparison table for shopping-stage users."
+                )
+            elif category == "fraud":
+                ideas.append(
+                    "Add scam red flags and official verification links before any lead or affiliate CTA."
+                )
+            else:
+                ideas.append(
+                    "Use representative user questions as FAQ prompts, then answer from official sources."
+                )
+        return list(dict.fromkeys(ideas))

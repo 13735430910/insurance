@@ -13,6 +13,7 @@ from .reporter import Reporter
 from .youtube_scraper import YouTubeScraper
 from .quora_scraper import QuoraScraper
 from .trends_scraper import TrendsScraper
+from .knowledge_base import KnowledgeBaseBuilder
 
 
 logger = logging.getLogger(__name__)
@@ -29,6 +30,7 @@ class Engine:
         self.yt = YouTubeScraper(config)
         self.quora = QuoraScraper(config)
         self.trends = TrendsScraper(config)
+        self.knowledge_base = KnowledgeBaseBuilder(config, self.db, self.reporter)
 
     def run(self, subreddits: list = None, with_comments: bool = True):
         """Run a full scrape → analyze → report cycle."""
@@ -260,6 +262,29 @@ class Engine:
         return {"groups": len(data.get("trends", {})),
                 "domain_results": len(data.get("domain_results", [])),
                 "stats": stats}
+
+    def run_knowledge_base(
+        self,
+        fetch_sources: bool = True,
+        max_results_per_query: int = None,
+        pain_limit: int = None,
+        topic_slugs: list = None,
+    ) -> dict:
+        """Build the bilingual insurance knowledge base from existing data."""
+        logger.info("Starting knowledge base build...")
+        result = self.knowledge_base.build(
+            fetch_sources=fetch_sources,
+            max_results_per_query=max_results_per_query,
+            pain_limit=pain_limit,
+            topic_slugs=topic_slugs,
+        )
+        logger.info(
+            "Knowledge base complete: %s topics, %s sources, %s pain links",
+            result.get("topics", 0),
+            result.get("sources", 0),
+            result.get("pain_links", 0),
+        )
+        return result
 
     def search_keyword(self, keyword: str, subreddit: str = "all") -> list:
         """Search for a specific keyword across subreddits."""

@@ -1,0 +1,12 @@
+name = "coverwise-tools"
+compatibility_date = "2026-06-01"
+pages_build_output_dir = "dist"
+
+[vars]
+OWNER_EMAIL = "rockxh2036@gmail.com"
+
+# Configure one of these in Cloudflare, not in git:
+# FROM_EMAIL = "reports@yourdomain.com"
+# RESEND_API_KEY = "re_..."
+#
+# If using Cloudflare Email Sending, bind it as EMAIL in the Pages project.

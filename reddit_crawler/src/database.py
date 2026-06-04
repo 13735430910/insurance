@@ -1,8 +1,7 @@
 """
-SQLite database for storing scraped Reddit posts and pain point analysis.
+SQLite database for storing scraped posts, pain points, and knowledge base items.
 """
 import sqlite3
-import hashlib
 from datetime import datetime
 from pathlib import Path
 
@@ -148,6 +147,55 @@ class Database:
 
         CREATE INDEX IF NOT EXISTS idx_quora_pp_post ON quora_pain_points(post_id);
         CREATE INDEX IF NOT EXISTS idx_trends_domain ON trends_domain_results(keyword);
+
+        CREATE TABLE IF NOT EXISTS knowledge_topics (
+            slug TEXT PRIMARY KEY,
+            name_en TEXT NOT NULL,
+            name_es TEXT,
+            priority INTEGER DEFAULT 50,
+            niche_tier TEXT,
+            description_en TEXT,
+            description_es TEXT,
+            audience TEXT,
+            site_asset TEXT,
+            updated_at TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS knowledge_sources (
+            id TEXT PRIMARY KEY,
+            topic_slug TEXT NOT NULL,
+            lang TEXT DEFAULT 'en',
+            source_type TEXT,
+            authority TEXT,
+            trust_level TEXT DEFAULT 'official',
+            title TEXT NOT NULL,
+            url TEXT NOT NULL,
+            domain TEXT,
+            snippet TEXT,
+            search_query TEXT,
+            source_origin TEXT DEFAULT 'curated',
+            fetched_at TEXT NOT NULL,
+            FOREIGN KEY (topic_slug) REFERENCES knowledge_topics(slug)
+        );
+
+        CREATE TABLE IF NOT EXISTS knowledge_pain_links (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            topic_slug TEXT NOT NULL,
+            platform TEXT NOT NULL,
+            item_id TEXT NOT NULL,
+            pain_category TEXT,
+            severity TEXT,
+            lang TEXT,
+            title TEXT,
+            url TEXT,
+            excerpt TEXT,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY (topic_slug) REFERENCES knowledge_topics(slug)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_kb_sources_topic ON knowledge_sources(topic_slug);
+        CREATE INDEX IF NOT EXISTS idx_kb_sources_lang ON knowledge_sources(lang);
+        CREATE INDEX IF NOT EXISTS idx_kb_pain_topic ON knowledge_pain_links(topic_slug);
         """)
         self.conn.commit()
 
@@ -413,6 +461,198 @@ class Database:
             "SELECT COUNT(*) FROM trends_domain_results"
         ).fetchone()[0]
         return {"trends_groups": total_groups, "domain_results": total_domains}
+
+    # --- Knowledge base methods ---
+
+    def upsert_knowledge_topic(self, topic: dict):
+        self.conn.execute("""
+            INSERT INTO knowledge_topics
+            (slug, name_en, name_es, priority, niche_tier, description_en,
+             description_es, audience, site_asset, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(slug) DO UPDATE SET
+                name_en = excluded.name_en,
+                name_es = excluded.name_es,
+                priority = excluded.priority,
+                niche_tier = excluded.niche_tier,
+                description_en = excluded.description_en,
+                description_es = excluded.description_es,
+                audience = excluded.audience,
+                site_asset = excluded.site_asset,
+                updated_at = excluded.updated_at
+        """, (
+            topic["slug"], topic["name_en"], topic.get("name_es", ""),
+            topic.get("priority", 50), topic.get("niche_tier", ""),
+            topic.get("description_en", ""), topic.get("description_es", ""),
+            topic.get("audience", ""), topic.get("site_asset", ""),
+            datetime.utcnow().isoformat(),
+        ))
+        self.conn.commit()
+
+    def upsert_knowledge_source(self, source: dict):
+        self.conn.execute("""
+            INSERT INTO knowledge_sources
+            (id, topic_slug, lang, source_type, authority, trust_level, title,
+             url, domain, snippet, search_query, source_origin, fetched_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+                topic_slug = excluded.topic_slug,
+                lang = excluded.lang,
+                source_type = excluded.source_type,
+                authority = excluded.authority,
+                trust_level = excluded.trust_level,
+                title = excluded.title,
+                url = excluded.url,
+                domain = excluded.domain,
+                snippet = excluded.snippet,
+                search_query = excluded.search_query,
+                source_origin = excluded.source_origin,
+                fetched_at = excluded.fetched_at
+        """, (
+            source["id"], source["topic_slug"], source.get("lang", "en"),
+            source.get("source_type", ""), source.get("authority", ""),
+            source.get("trust_level", "official"), source["title"],
+            source["url"], source.get("domain", ""), source.get("snippet", ""),
+            source.get("search_query", ""), source.get("source_origin", "curated"),
+            datetime.utcnow().isoformat(),
+        ))
+        self.conn.commit()
+
+    def clear_knowledge_pain_links(self, topic_slugs: list = None):
+        if topic_slugs:
+            placeholders = ",".join("?" for _ in topic_slugs)
+            self.conn.execute(
+                f"DELETE FROM knowledge_pain_links WHERE topic_slug IN ({placeholders})",
+                tuple(topic_slugs),
+            )
+        else:
+            self.conn.execute("DELETE FROM knowledge_pain_links")
+        self.conn.commit()
+
+    def insert_knowledge_pain_link(self, link: dict):
+        self.conn.execute("""
+            INSERT INTO knowledge_pain_links
+            (topic_slug, platform, item_id, pain_category, severity, lang,
+             title, url, excerpt, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            link["topic_slug"], link["platform"], link["item_id"],
+            link.get("pain_category", ""), link.get("severity", ""),
+            link.get("lang", ""), link.get("title", ""), link.get("url", ""),
+            link.get("excerpt", ""), datetime.utcnow().isoformat(),
+        ))
+        self.conn.commit()
+
+    def get_all_pain_points_for_kb(self, limit: int = 1000) -> list:
+        items = []
+
+        rows = self.conn.execute("""
+            SELECT 'reddit' AS platform, pp.post_id AS item_id, pp.category,
+                   pp.severity, '' AS lang, p.title, p.url, pp.excerpt,
+                   pp.matched_keywords, pp.created_at
+            FROM pain_points pp
+            JOIN posts p ON pp.post_id = p.id
+            ORDER BY pp.id DESC
+            LIMIT ?
+        """, (limit,)).fetchall()
+        items.extend(dict(r) for r in rows)
+
+        rows = self.conn.execute("""
+            SELECT 'youtube' AS platform, ypp.video_id AS item_id, ypp.category,
+                   ypp.severity, yv.lang, yv.title, yv.url, ypp.excerpt,
+                   ypp.matched_keywords, ypp.created_at
+            FROM youtube_pain_points ypp
+            JOIN youtube_videos yv ON ypp.video_id = yv.id
+            ORDER BY ypp.id DESC
+            LIMIT ?
+        """, (limit,)).fetchall()
+        items.extend(dict(r) for r in rows)
+
+        rows = self.conn.execute("""
+            SELECT 'quora' AS platform, qpp.post_id AS item_id, qpp.category,
+                   qpp.severity, qp.lang, qp.title, qp.url, qpp.excerpt,
+                   qpp.matched_keywords, qpp.created_at
+            FROM quora_pain_points qpp
+            JOIN quora_posts qp ON qpp.post_id = qp.id
+            ORDER BY qpp.id DESC
+            LIMIT ?
+        """, (limit,)).fetchall()
+        items.extend(dict(r) for r in rows)
+
+        return sorted(items, key=lambda x: x.get("created_at") or "", reverse=True)[:limit]
+
+    def get_knowledge_topics(self) -> list:
+        rows = self.conn.execute("""
+            SELECT kt.*,
+                   COUNT(DISTINCT ks.id) AS source_count,
+                   COUNT(DISTINCT kpl.id) AS pain_link_count
+            FROM knowledge_topics kt
+            LEFT JOIN knowledge_sources ks ON ks.topic_slug = kt.slug
+            LEFT JOIN knowledge_pain_links kpl ON kpl.topic_slug = kt.slug
+            GROUP BY kt.slug
+            ORDER BY kt.priority ASC, pain_link_count DESC, kt.slug ASC
+        """).fetchall()
+        return [dict(r) for r in rows]
+
+    def get_knowledge_sources(self, topic_slug: str = None, limit: int = 500) -> list:
+        if topic_slug:
+            rows = self.conn.execute("""
+                SELECT * FROM knowledge_sources
+                WHERE topic_slug = ?
+                ORDER BY trust_level, source_origin, authority, title
+                LIMIT ?
+            """, (topic_slug, limit)).fetchall()
+        else:
+            rows = self.conn.execute("""
+                SELECT * FROM knowledge_sources
+                ORDER BY topic_slug, trust_level, source_origin, authority, title
+                LIMIT ?
+            """, (limit,)).fetchall()
+        return [dict(r) for r in rows]
+
+    def get_knowledge_pain_links(self, topic_slug: str = None, limit: int = 100) -> list:
+        if topic_slug:
+            rows = self.conn.execute("""
+                SELECT * FROM knowledge_pain_links
+                WHERE topic_slug = ?
+                ORDER BY CASE severity WHEN 'high' THEN 0 WHEN 'medium' THEN 1 ELSE 2 END,
+                         id DESC
+                LIMIT ?
+            """, (topic_slug, limit)).fetchall()
+        else:
+            rows = self.conn.execute("""
+                SELECT * FROM knowledge_pain_links
+                ORDER BY id DESC
+                LIMIT ?
+            """, (limit,)).fetchall()
+        return [dict(r) for r in rows]
+
+    def get_knowledge_stats(self) -> dict:
+        topics = self.conn.execute("SELECT COUNT(*) FROM knowledge_topics").fetchone()[0]
+        sources = self.conn.execute("SELECT COUNT(*) FROM knowledge_sources").fetchone()[0]
+        links = self.conn.execute("SELECT COUNT(*) FROM knowledge_pain_links").fetchone()[0]
+        by_lang = self.conn.execute("""
+            SELECT lang, COUNT(*) AS cnt
+            FROM knowledge_sources
+            GROUP BY lang
+            ORDER BY cnt DESC
+        """).fetchall()
+        by_topic = self.conn.execute("""
+            SELECT kt.slug, kt.name_en, COUNT(DISTINCT kpl.id) AS pain_links,
+                   COUNT(DISTINCT ks.id) AS sources
+            FROM knowledge_topics kt
+            LEFT JOIN knowledge_pain_links kpl ON kpl.topic_slug = kt.slug
+            LEFT JOIN knowledge_sources ks ON ks.topic_slug = kt.slug
+            GROUP BY kt.slug
+            ORDER BY pain_links DESC, kt.priority ASC
+        """).fetchall()
+        return {
+            "topics": topics,
+            "sources": sources,
+            "pain_links": links,
+            "sources_by_lang": [(r["lang"], r["cnt"]) for r in by_lang],
+            "topics_summary": [dict(r) for r in by_topic],
+        }
 
     def close(self):
         self.conn.close()

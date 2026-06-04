@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://coverwise.tools/sitemap.xml

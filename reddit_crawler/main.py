@@ -143,11 +143,17 @@ def main():
     subparsers.add_parser("youtube", help="Run YouTube search + comment extraction")
     subparsers.add_parser("quora", help="Run Quora search via DuckDuckGo")
     subparsers.add_parser("trends", help="Run Google Trends + domain search")
+    p_kb = subparsers.add_parser("kb", help="Build bilingual insurance knowledge base")
+    p_kb.add_argument("--no-fetch", action="store_true", help="Skip web discovery; use curated sources only")
+    p_kb.add_argument("--max-results", type=int, default=None, help="Max search results per query")
+    p_kb.add_argument("--pain-limit", type=int, default=None, help="Max pain points to scan")
+    p_kb.add_argument("--topics", nargs="*", default=None, help="Optional topic slugs to rebuild")
     subparsers.add_parser("tstats", help="Show Trends database statistics")
 
     subparsers.add_parser("qstats", help="Show Quora database statistics")
 
     subparsers.add_parser("ytstats", help="Show YouTube database statistics")
+    subparsers.add_parser("kbstats", help="Show knowledge base database statistics")
 
     # stats
     subparsers.add_parser("stats", help="Show full database statistics")
@@ -181,6 +187,10 @@ def main():
         cmd_trends(args, config)
     elif args.command == "tstats":
         cmd_tstats(args, config)
+    elif args.command == "kb":
+        cmd_kb(args, config)
+    elif args.command == "kbstats":
+        cmd_kbstats(args, config)
 
 
 def cmd_trends(args, config):
@@ -199,6 +209,9 @@ def cmd_tstats(args, config):
     print(f"Trend groups:      {stats['trends_groups']}")
     print(f"Domain results:    {stats['domain_results']}")
     db.close()
+
+
+def cmd_quora(args, config):
     from src.engine import Engine
     engine = Engine(config)
     result = engine.run_quora()
@@ -218,6 +231,9 @@ def cmd_qstats(args, config):
     print(f"  English (en):   {stats['english']}")
     print(f"Total pain points: {stats['total_pain_points']}")
     db.close()
+
+
+def cmd_youtube(args, config):
     from src.engine import Engine
     engine = Engine(config)
     result = engine.run_youtube()
@@ -236,6 +252,57 @@ def cmd_ytstats(args, config):
     print(f"  Spanish (es):   {stats['spanish']}")
     print(f"  English (en):   {stats['english']}")
     print(f"Total pain points: {stats['total_pain_points']}")
+    db.close()
+
+
+def cmd_kb(args, config):
+    from src.database import Database
+    from src.knowledge_base import KnowledgeBaseBuilder
+    from src.reporter import Reporter
+
+    db = Database(config["database"]["path"])
+    reporter = Reporter(config["reports"]["output_dir"])
+    builder = KnowledgeBaseBuilder(config, db, reporter)
+    result = builder.build(
+        fetch_sources=not args.no_fetch,
+        max_results_per_query=args.max_results,
+        pain_limit=args.pain_limit,
+        topic_slugs=args.topics,
+    )
+    print("\nKnowledge base generated.")
+    print(f"  Topics:           {result.get('topics', 0)}")
+    print(f"  Sources:          {result.get('sources', 0)}")
+    print(f"  Pain links:       {result.get('pain_links', 0)}")
+    print(f"  Pain scanned:     {result.get('pain_points_scanned', 0)}")
+    print(f"  Sources fetched:  {result.get('sources_discovered', 0)}")
+    paths = result.get("export_paths", {})
+    if paths:
+        print("  Exports:")
+        for label, path in paths.items():
+            print(f"    {label}: {path}")
+    db.close()
+
+
+def cmd_kbstats(args, config):
+    from src.database import Database
+
+    db = Database(config["database"]["path"])
+    stats = db.get_knowledge_stats()
+    print("\nKnowledge Base Statistics")
+    print("=" * 40)
+    print(f"Topics:       {stats['topics']}")
+    print(f"Sources:      {stats['sources']}")
+    print(f"Pain links:   {stats['pain_links']}")
+    if stats.get("sources_by_lang"):
+        print()
+        print("Sources by language:")
+        for lang, cnt in stats["sources_by_lang"]:
+            print(f"  {lang or 'unknown':8s} {cnt:5d}")
+    if stats.get("topics_summary"):
+        print()
+        print("Top topics by pain links:")
+        for row in stats["topics_summary"][:10]:
+            print(f"  {row['slug']:24s} pain={row['pain_links']:4d} sources={row['sources']:3d}")
     db.close()
 
 
