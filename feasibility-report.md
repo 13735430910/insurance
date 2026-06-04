@@ -1,7 +1,24 @@
 # 美国保险工具网站 — 可行性研究报告
 
-> 日期：2026-06-04
+> 日期：2026-06-04 | 更新：2026-06-05
 > 范围：纯静态网站，Cloudflare 部署，AdSense 变现，美国市场
+> 结论级别：有条件可行，建议以 90 天 MVP 验证启动；不建议把它当成短期 AdSense 套利项目
+
+---
+
+## 零、执行摘要
+
+美国保险工具网站具备可行性，但真正可行的不是"做一批计算器等广告收入"，而是"用原创方法论、公开数据处理、场景化解释和工具体验，建立一个可信的保险教育型内容资产"。保险属于典型 YMYL（Your Money or Your Life）主题，Google 对内容可信度、作者透明度、来源质量和用户价值的要求显著高于普通工具站。
+
+本项目最优切入点不是 `car insurance`、`auto insurance`、`life insurance` 这类主关键词。这些词被 NerdWallet、Insurify、The Zebra、Policygenius、Compare.com、保险公司官网和州/联邦级权威站点长期占据。更现实的路径是：
+
+1. 以"寿险需求估算 + 最终费用规划"为核心主题建立可信内容基础。
+2. 用英文 + 西语双语内容切入美国拉美裔用户群，但必须做本土化校对，不能只做机器翻译。
+3. 用 Pinterest、Reddit 和社区问答获得早期真实访问与反馈，缓解 Google SEO 沙盒期的冷启动问题。
+4. 前期以 AdSense 作为低摩擦变现验证；中后期在法律审查后接入联盟、CPL 或保险垂直 marketplace，但不要过早收集用户个人信息。
+5. 全站遵守"教育内容，不销售、不招揽、不谈判具体保险合同"的合规边界。
+
+最终建议：启动，但以"低成本、强验证、严合规"的方式启动。第一阶段不要追求页面数量，而要追求 20-30 个高质量页面能否被索引、获得展示、获得真实用户停留和自然链接。
 
 ---
 
@@ -74,12 +91,14 @@ RPM = CPC × CTR × 1000
 | 乐观 | $20 | 0.50% | **$100** |
 | 高价值关键词 | $40+ | 0.50% | **$200+** |
 
-| 月访问量 | 页面/访问 | RPM $30 | RPM $60 | RPM $100 |
-|----------|----------|---------|---------|----------|
-| 1,000 | 2 | $60/mo | $120/mo | $200/mo |
-| 10,000 | 2 | $600/mo | $1,200/mo | $2,000/mo |
-| 50,000 | 2 | $3,000/mo | $6,000/mo | $10,000/mo |
-| 100,000 | 3 | $9,000/mo | $18,000/mo | $30,000/mo |
+| 月访问量 | 页面/访问 | 页面浏览量 | 保守 RPM $15 | 中性 RPM $40 | 乐观 RPM $80 |
+|----------|----------|----------|-------------|-------------|-------------|
+| 1,000 | 2 | 2,000 | $30/mo | $80/mo | $160/mo |
+| 10,000 | 2 | 20,000 | $300/mo | $800/mo | $1,600/mo |
+| 50,000 | 2 | 100,000 | $1,500/mo | $4,000/mo | $8,000/mo |
+| 100,000 | 3 | 300,000 | $4,500/mo | $12,000/mo | $24,000/mo |
+
+> **注意**：这是规划假设，不是承诺。保险关键词 CPC 高不等于发布商页面 RPM 必然高。搜索广告 CPC、展示广告收益、AdSense 分成、填充率、点击率不是同一口径。新站、低权重、非购买意图页面的 RPM 会明显低于乐观估算。真实 RPM 需上线后按页面、国家、设备和内容意图拆分验证。
 
 ### 2.3 关键注意事项
 
@@ -715,7 +734,7 @@ My Payer Directory (B2B 专业服务)
 纯静态 HTML/CSS/JS 完全可行：
 - 所有计算逻辑在客户端 JavaScript
 - 无需后端、无需数据库、无需 API 密钥管理
-- Cloudflare Pages 免费托管（无限带宽）
+- Cloudflare Pages 免费托管（静态资产分发成本极低，有平台限制：免费计划每站 20,000 文件、单文件 25 MiB、构建次数配额等）
 - 全球 CDN，Core Web Vitals 满分
 
 ### 7.2 可构建的工具类型
@@ -731,6 +750,20 @@ My Payer Directory (B2B 专业服务)
 - 不能集成实时保险报价 API（需要后端代理）
 - 不能实现用户账户/登录
 - 不能使用任何需要服务端密钥的第三方服务（但可通过 Worker 代理）
+
+### 7.3（附）双语站国际 SEO
+
+双语站必须做好 hreflang 和独立 canonicals：
+- `/en/` 与 `/es/` 独立目录，不是 URL 参数区分
+- `hreflang="en-us"` 与 `hreflang="es-us"`
+- 每个语言版本独立 canonical，西语页不能 canonical 到英文页
+- 西语 URL 使用自然 slug：`/es/calculadora-seguro-vida/`
+- 语言切换在导航栏清晰可见
+
+结构化数据注意事项：
+- Google 已限制 FAQ rich results，主要面向知名权威的政府和健康网站。不要期待保险站 FAQ schema 一定获得富摘要
+- 不要添加虚假星级评分。Google 明确禁止标记不存在的或第三方生成的评分
+- 只在页面可见、真实收集的评价基础上才考虑 aggregateRating
 
 ### 7.4 邮件功能：Cloudflare Worker + Email Sending API
 
@@ -1107,3 +1140,85 @@ reddit_crawler/
 4. **DuckDuckGo `site:` 搜索 = 零成本 Custom Search API**：在 17 个保险域名中搜索的效果等价于 Google CSE
 5. **LLM 分析 vs 关键词匹配**：90% vs 4% 的痛点检出率差距说明 LLM 在这个场景是不可替代的
 6. **西语市场确认**：Reddit 上几乎零西语保险讨论，YouTube 和 Quora 有少量但有价值的内容——蓝海判断成立
+
+---
+
+## 十二、90 天启动与验证策略
+
+### 12.1 冷启动：Pinterest + Reddit 缓解 SEO 沙盒期
+
+Google SEO 是长期主线，但前 3-6 个月新站可能低展示、低点击、慢索引。引入 Pinterest 和 Reddit 作为早期反馈渠道。
+
+#### Pinterest
+
+Pinterest 适合本项目，用户群与家庭预算、亲子、婚礼、葬礼规划主题高度重叠。
+- 每篇核心文章生成 3-5 张竖版 infographic
+- 图表主题：DIME method in 4 steps、Funeral cost breakdown 等
+- 链接加 UTM 参数，单独衡量访问质量
+- Pinterest 流量不直接提升 Google 排名，价值在于早期用户、索引发现、内容测试
+
+#### Reddit
+
+不打广告、不发链接，而是贡献高质量纯文本回答。
+关注 r/personalfinance、r/insurance、r/LifeInsurance、r/povertyfinance、r/Frugal。
+原则：先回答问题，只在社区规则允许时补充工具链接，不碰具体产品推荐。
+
+### 12.2 90 天验证指标
+
+**成功信号**（看到可继续）：70%+ 页面被索引、Search Console 出现稳定 impression、5-10 个长尾词进入前 50、工具页停留时间 > 普通文章。
+
+**警告信号**（出现要调整）：索引率 < 40%、几乎无 impression、大量 Crawled - not indexed、用户快速跳出。
+
+**退出标准**（6 个月后）：50+ 页面仍无自然展示、AdSense 多次被拒、西语质控成本过高。
+
+### 12.3 MVP 清单
+
+**必做（Phase 1，20-30 页）**：
+- 英文 + 西语寿险需求计算器
+- 英文 + 西语最终费用计算器
+- DIME / HLV 方法解释（双语）
+- 葬礼费用拆分文章
+- 单亲家庭、自雇人士场景页
+- About、Contact、Privacy、Terms、Disclaimer、Editorial Policy、Author
+- Search Console + analytics
+
+**暂缓（Phase 1）**：车险、Medicare、真实报价、用户账户、lead form、大规模 AI 内容
+
+**可 Phase 2 加入**：宠物保险、小众职业责任险、各州 funeral cost 数据页
+
+### 12.4 合规红线
+
+保险执照边界：是否 **sell、solicit、negotiate** insurance 是核心判断标准。
+
+**允许**：解释概念、展示公开数据、提供非个性化估算、引导咨询持牌代理。
+
+**禁止**：推荐具体保险公司、说某产品"最适合你"、展示真实报价、收集用户 PII 转给代理、进入 Medicare lead gen（CMS TPMO 规则复杂，不建议第一年做）。
+
+### 12.5 广告 vs 联盟变现的阶段性决策
+
+| 模式 | 第一阶段 | 第二阶段（6 个月后） | 原因 |
+|------|---------|-------------------|------|
+| AdSense | 建议 | 继续 | 低摩擦，合规压力低 |
+| 保险 affiliate outbound click | 不建议 | 可测试 | 需披露商业关系 |
+| ZIP-only 跳转 | 不建议 | 谨慎测试 | 仍需隐私与合规审查 |
+| 收集电话/邮箱 lead form | 不建议 | 暂不建议 | TCPA/隐私/保险监管复杂 |
+| Medicare lead gen | 不建议 | 不建议 | CMS 规则复杂，老人群体高敏感 |
+
+---
+
+## 附录：主要参考来源
+
+- Google Search Central, Creating helpful content: https://developers.google.com/search/docs/fundamentals/creating-helpful-content
+- Google AdSense eligibility: https://support.google.com/adsense/answer/9724
+- Google AdSense program policies: https://support.google.com/adsense/answer/48182
+- Google Structured Data guidelines: https://developers.google.com/search/docs/appearance/structured-data/sd-policies
+- Google FAQ/HowTo rich result changes (2023): https://developers.google.com/search/blog/2023/08/howto-faq-changes
+- Cloudflare Pages limits: https://developers.cloudflare.com/pages/platform/limits/
+- NAIC State Licensing Handbook: https://content.naic.org/sites/default/files/legacy/documents/prod_serv_marketreg_stl_hb.pdf
+- CMS Medicare Advantage and Part D Final Rule: https://www.cms.gov/newsroom/fact-sheets/contract-year-2025-medicare-advantage-and-part-d-final-rule-cms-4205-f
+- PropertyCasualty360, Google insurance searches record 2025: https://www.propertycasualty360.com/2026/01/09/google-searches-for-insurance-hit-record-levels-in-2025/
+- Pew Research Center, Key facts about U.S. Latinos (2025): https://www.pewresearch.org/short-reads/2025/10/22/key-facts-about-us-latinos/
+- NFDA 2023 General Price List Study: https://nfda.org/news/media-center/nfda-news-releases/id/8134/
+- LIMRA/LIC Final Expense Survey (2024 增长 16%): https://www.loma.org/en/news/press-releases/2025/
+- NAPHIA State of the Industry 2025: https://naphia.org/industry-data/
+- EverQuote 2025 Form 10-K (marketing 占收入 78%): https://www.sec.gov/Archives/edgar/data/1640428/
