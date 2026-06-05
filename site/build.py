@@ -22,13 +22,13 @@ REPO = ROOT.parent
 DIST = ROOT / "dist"
 ASSETS = ROOT / "assets"
 KB_PATH = REPO / "reddit_crawler" / "reports" / "knowledge_base" / "knowledge_items.jsonl"
-SITE_URL = "https://coverwise.tools"
+SITE_URL = "https://segurotools.com"
 TODAY = date.today().isoformat()
 
 
 TEXT = {
     "en": {
-        "brand": "CoverWise Tools",
+        "brand": "SeguroTools",
         "tagline": "Insurance calculators and plain-English guides for U.S. households.",
         "home": "Home",
         "calculators": "Calculators",
@@ -53,7 +53,7 @@ TEXT = {
         "updated": "Reviewed",
     },
     "es": {
-        "brand": "CoverWise Tools",
+        "brand": "SeguroTools",
         "tagline": "Calculadoras y guías claras sobre seguros en Estados Unidos.",
         "home": "Inicio",
         "calculators": "Calculadoras",
@@ -692,14 +692,28 @@ def legal_pages(lang: str) -> dict:
     def about():
         return page_intro(TEXT[lang]["about"], "Independent insurance education tools for U.S. consumers." if lang == "en" else "Herramientas educativas independientes sobre seguros en EE. UU.", lang) + f"""
         <section class="section"><div class="container article-body">
-          <p>{'CoverWise Tools is built as an educational content asset: calculators, source shelves, and bilingual explanations before any monetization layer.' if lang == 'en' else 'CoverWise Tools se construye como un activo educativo: calculadoras, fuentes y explicaciones bilingües antes de cualquier capa de monetización.'}</p>
+          <p>{'SeguroTools is built as an educational content asset: calculators, source shelves, and bilingual explanations before any monetization layer.' if lang == 'en' else 'SeguroTools se construye como un activo educativo: calculadoras, fuentes y explicaciones bilingües antes de cualquier capa de monetización.'}</p>
           <p>{esc(TEXT[lang]['not_advice'])}</p>
         </div></section>"""
 
     def contact():
-        return page_intro(TEXT[lang]["contact"], "Questions, corrections, and source suggestions." if lang == "en" else "Preguntas, correcciones y sugerencias de fuentes.", lang) + """
+        intro = "Questions, corrections, source suggestions, and privacy requests." if lang == "en" else "Preguntas, correcciones, sugerencias de fuentes y solicitudes de privacidad."
+        note = "Role inboxes are centrally monitored so requests can be routed by topic without implying a separate person for every address." if lang == "en" else "Los buzones por función se revisan de forma centralizada para enrutar solicitudes por tema sin implicar una persona separada para cada dirección."
+        return page_intro(TEXT[lang]["contact"], intro, lang) + f"""
         <section class="section"><div class="container article-body">
-          <p>Email: <a href="mailto:rockxh2036@gmail.com">rockxh2036@gmail.com</a></p>
+          <p>General: <a href="mailto:hello@segurotools.com">hello@segurotools.com</a></p>
+          <p>Spanish support: <a href="mailto:hola@segurotools.com">hola@segurotools.com</a></p>
+          <p>Support: <a href="mailto:support@segurotools.com">support@segurotools.com</a></p>
+          <p>Calculators: <a href="mailto:calculators@segurotools.com">calculators@segurotools.com</a></p>
+          <p>Editorial: <a href="mailto:editorial@segurotools.com">editorial@segurotools.com</a></p>
+          <p>Corrections: <a href="mailto:corrections@segurotools.com">corrections@segurotools.com</a></p>
+          <p>Source suggestions: <a href="mailto:sources@segurotools.com">sources@segurotools.com</a></p>
+          <p>Research: <a href="mailto:research@segurotools.com">research@segurotools.com</a></p>
+          <p>Privacy requests: <a href="mailto:privacy@segurotools.com">privacy@segurotools.com</a></p>
+          <p>Legal notices: <a href="mailto:legal@segurotools.com">legal@segurotools.com</a></p>
+          <p>Advertising: <a href="mailto:ads@segurotools.com">ads@segurotools.com</a></p>
+          <p>Partnerships: <a href="mailto:partners@segurotools.com">partners@segurotools.com</a></p>
+          <p class="small">{esc(note)}</p>
         </div></section>"""
 
     def privacy():
@@ -744,7 +758,7 @@ def render_layout(lang: str, body: str, title: str, desc: str, rel_path: str, al
 <body>
   <header class="site-header">
     <nav class="nav" aria-label="Primary">
-      <a class="brand" href="/{lang}/"><span class="brand-mark">CW</span><span>{esc(t['brand'])}</span></a>
+      <a class="brand" href="/{lang}/"><span class="brand-mark">ST</span><span>{esc(t['brand'])}</span></a>
       <div class="nav-links">
         <a href="/{lang}/">{esc(t['home'])}</a>
         <a href="/{lang}/{calc_base(lang)}/">{esc(t['calculators'])}</a>
@@ -843,7 +857,7 @@ def write_page(rel_path: str, content: str, binary: bool = False) -> str:
 
 
 def root_redirect() -> str:
-    return """<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=/en/"><link rel="canonical" href="/en/"><title>CoverWise Tools</title></head><body><a href="/en/">English</a> · <a href="/es/">Español</a></body></html>"""
+    return """<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=/en/"><link rel="canonical" href="/en/"><title>SeguroTools</title></head><body><a href="/en/">English</a> · <a href="/es/">Español</a></body></html>"""
 
 
 def sitemap(paths: list[str]) -> str:
@@ -857,7 +871,7 @@ def sitemap(paths: list[str]) -> str:
 
 
 def robots() -> str:
-    return "User-agent: *\nAllow: /\nSitemap: https://coverwise.tools/sitemap.xml\n"
+    return f"User-agent: *\nAllow: /\nSitemap: {SITE_URL}/sitemap.xml\n"
 
 
 def redirects() -> str:
@@ -882,12 +896,12 @@ def schema(title: str, desc: str, url: str, lang: str) -> dict:
         "inLanguage": f"{lang}-US",
         "dateModified": TODAY,
         "isAccessibleForFree": True,
-        "publisher": {"@type": "Organization", "name": "CoverWise Tools"},
+        "publisher": {"@type": "Organization", "name": "SeguroTools"},
     }
 
 
 def home_title(lang: str) -> str:
-    return "CoverWise Tools | U.S. insurance calculators and bilingual guides" if lang == "en" else "CoverWise Tools | Calculadoras y guías bilingües de seguros"
+    return "SeguroTools | U.S. insurance calculators and bilingual guides" if lang == "en" else "SeguroTools | Calculadoras y guías bilingües de seguros"
 
 
 def page_title(lang: str, title: str) -> str:

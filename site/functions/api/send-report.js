@@ -1,4 +1,4 @@
-const OWNER_EMAIL = "rockxh2036@gmail.com";
+const OWNER_EMAIL = "segruotools@gmail.com";
 
 export async function onRequestPost({ request, env }) {
   let body;
@@ -20,7 +20,7 @@ export async function onRequestPost({ request, env }) {
     return json({ error: "Consent is required" }, 400);
   }
 
-  const from = env.FROM_EMAIL || "reports@example.com";
+  const from = env.FROM_EMAIL || "reports@segurotools.com";
   const owner = env.OWNER_EMAIL || OWNER_EMAIL;
   const title = clean(payload.title || "Insurance planning report");
   const locale = payload.locale === "es" ? "es" : "en";

@@ -1,12 +1,16 @@
-name = "coverwise-tools"
+name = "segurotools"
 compatibility_date = "2026-06-01"
 pages_build_output_dir = "dist"
 
 [vars]
-OWNER_EMAIL = "rockxh2036@gmail.com"
+OWNER_EMAIL = "segruotools@gmail.com"
+FORWARD_EMAIL = "segruotools@gmail.com"
+FROM_EMAIL = "reports@segurotools.com"
+INBOUND_FROM_EMAIL = "forwarder@segurotools.com"
+INBOUND_DOMAIN = "segurotools.com"
 
-# Configure one of these in Cloudflare, not in git:
-# FROM_EMAIL = "reports@yourdomain.com"
+# Configure these as Cloudflare Pages secrets, not in git:
 # RESEND_API_KEY = "re_..."
+# RESEND_WEBHOOK_SECRET = "whsec_..."
 #
 # If using Cloudflare Email Sending, bind it as EMAIL in the Pages project.
