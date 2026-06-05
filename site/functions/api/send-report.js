@@ -55,6 +55,15 @@ export async function onRequestOptions() {
   return new Response(null, { status: 204, headers: corsHeaders() });
 }
 
+export async function onRequestGet() {
+  return json({
+    ok: false,
+    endpoint: "/api/send-report",
+    method: "POST",
+    message: "Send calculator reports with POST JSON. Browser GET requests do not send email.",
+  }, 405, { Allow: "POST, OPTIONS" });
+}
+
 async function sendEmail(env, message) {
   if (env.EMAIL && typeof env.EMAIL.send === "function") {
     await env.EMAIL.send(message);
@@ -134,12 +143,13 @@ function clean(value) {
     .replaceAll("'", "&#039;");
 }
 
-function json(data, status = 200) {
+function json(data, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
       "Content-Type": "application/json; charset=utf-8",
       ...corsHeaders(),
+      ...extraHeaders,
     },
   });
 }

@@ -71,6 +71,15 @@ export async function onRequestOptions() {
   return new Response(null, { status: 204, headers: corsHeaders() });
 }
 
+export async function onRequestGet() {
+  return json({
+    ok: false,
+    endpoint: "/api/inbound-email",
+    method: "POST",
+    message: "This endpoint accepts signed Resend email.received webhooks. Browser GET requests are not processed.",
+  }, 405, { Allow: "POST, OPTIONS" });
+}
+
 async function getReceivedEmail(apiKey, emailId) {
   const response = await fetch(`${RESEND_API_BASE}/emails/receiving/${encodeURIComponent(emailId)}`, {
     headers: {
@@ -267,12 +276,13 @@ function timingSafeEqual(a, b) {
   return diff === 0;
 }
 
-function json(data, status = 200) {
+function json(data, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
       "Content-Type": "application/json; charset=utf-8",
       ...corsHeaders(),
+      ...extraHeaders,
     },
   });
 }
