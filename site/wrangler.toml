@@ -6,6 +6,7 @@ pages_build_output_dir = "dist"
 OWNER_EMAIL = "segruotools@gmail.com"
 FORWARD_EMAIL = "segruotools@gmail.com"
 FROM_EMAIL = "reports@segurotools.com"
+REPLY_TO_EMAIL = "support@segurotools.com"
 INBOUND_FROM_EMAIL = "forwarder@segurotools.com"
 INBOUND_DOMAIN = "segurotools.com"
 

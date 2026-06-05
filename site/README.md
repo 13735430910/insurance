@@ -42,6 +42,7 @@ Required/optional variables:
 
 ```text
 FROM_EMAIL=reports@segurotools.com
+REPLY_TO_EMAIL=support@segurotools.com
 OWNER_EMAIL=segruotools@gmail.com
 RESEND_API_KEY=...
 ```

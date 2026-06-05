@@ -20,30 +20,39 @@ export async function onRequestPost({ request, env }) {
     return json({ error: "Consent is required" }, 400);
   }
 
-  const from = env.FROM_EMAIL || "reports@segurotools.com";
+  const from = formatFrom(env.FROM_EMAIL || "reports@segurotools.com");
+  const replyTo = env.REPLY_TO_EMAIL || "support@segurotools.com";
   const owner = env.OWNER_EMAIL || OWNER_EMAIL;
   const title = clean(payload.title || "Insurance planning report");
   const locale = payload.locale === "es" ? "es" : "en";
   const subject = locale === "es"
-    ? `Tu reporte de ${title}`
-    : `Your ${title} report`;
+    ? `Reporte de SeguroTools: ${title}`
+    : `SeguroTools report: ${title}`;
 
   const userHtml = renderUserEmail({ email, payload, locale });
+  const userText = renderUserText({ payload, locale });
   const ownerHtml = renderOwnerEmail({ email, payload, consent });
+  const ownerText = renderOwnerText({ email, payload, consent });
 
   try {
     await sendEmail(env, {
       from,
       to: email,
+      replyTo,
       subject,
       html: userHtml,
+      text: userText,
     });
-    await sendEmail(env, {
-      from,
-      to: owner,
-      subject: `Calculator lead: ${title}`,
-      html: ownerHtml,
-    });
+    if (email !== owner.toLowerCase()) {
+      await sendEmail(env, {
+        from,
+        to: owner,
+        replyTo,
+        subject: `SeguroTools calculator lead: ${title}`,
+        html: ownerHtml,
+        text: ownerText,
+      });
+    }
   } catch (error) {
     return json({
       error: "Email provider failed",
@@ -86,6 +95,11 @@ async function sendEmail(env, message) {
         to: message.to,
         subject: message.subject,
         html: message.html,
+        text: message.text,
+        reply_to: message.replyTo,
+        headers: {
+          "List-Unsubscribe": "<mailto:privacy@segurotools.com?subject=unsubscribe>",
+        },
       }),
     });
     if (!response.ok) {
@@ -112,27 +126,68 @@ function providerError(code, message) {
   return error;
 }
 
+function formatFrom(address) {
+  if (String(address).includes("<")) {
+    return address;
+  }
+  return `SeguroTools Reports <${address}>`;
+}
+
 function renderUserEmail({ payload, locale }) {
   const intro = locale === "es"
-    ? "Este reporte es educativo y no reemplaza asesoría de un agente, asesor fiscal, abogado o el Mercado oficial."
-    : "This report is educational and does not replace advice from an agent, tax adviser, attorney, or the official Marketplace.";
+    ? "Solicitaste este reporte educativo en SeguroTools. No reemplaza asesoría profesional ni una cotización oficial."
+    : "You requested this educational report from SeguroTools. It does not replace professional advice or an official quote.";
   const rows = Array.isArray(payload.rows) ? payload.rows : [];
   const notes = Array.isArray(payload.notes) ? payload.notes : [];
   return `
-    <div style="font-family:Arial,sans-serif;line-height:1.55;color:#17202a">
-      <h1 style="color:#12324a">${clean(payload.title || "Insurance report")}</h1>
+    <div style="display:none;max-height:0;overflow:hidden;color:transparent">SeguroTools calculator report requested from segurotools.com.</div>
+    <div style="font-family:Arial,sans-serif;line-height:1.55;color:#17202a;max-width:640px">
+      <p style="font-size:13px;color:#5b6777;margin:0 0 16px">SeguroTools | segurotools.com</p>
+      <h1 style="color:#12324a;font-size:24px;line-height:1.25;margin:0 0 16px">${clean(payload.title || "Insurance report")}</h1>
       <p>${intro}</p>
       <p><strong>${locale === "es" ? "Resultado" : "Result"}:</strong> ${clean(payload.total || "")}</p>
-      <h2>${locale === "es" ? "Desglose" : "Breakdown"}</h2>
+      <h2 style="font-size:18px;margin-top:24px">${locale === "es" ? "Desglose" : "Breakdown"}</h2>
       <table cellpadding="8" cellspacing="0" style="border-collapse:collapse;border:1px solid #dbe3ea">
-        ${rows.map(([label, value]) => `<tr><td style="border:1px solid #dbe3ea">${clean(label)}</td><td style="border:1px solid #dbe3ea"><strong>${clean(value)}</strong></td></tr>`).join("")}
+        ${rows.map(([label, value]) => `<tr><td style="border:1px solid #dbe3ea">${clean(label)}</td><td style="border:1px solid #dbe3ea"><strong>${clean(formatValue(value))}</strong></td></tr>`).join("")}
       </table>
-      <h2>${locale === "es" ? "Notas" : "Notes"}</h2>
+      <h2 style="font-size:18px;margin-top:24px">${locale === "es" ? "Notas" : "Notes"}</h2>
       <ul>${notes.map((note) => `<li>${clean(note)}</li>`).join("")}</ul>
       <p><a href="${clean(payload.page || "")}">${locale === "es" ? "Volver a la calculadora" : "Return to the calculator"}</a></p>
-      <p style="font-size:12px;color:#5b6777">${locale === "es" ? "Puedes responder a este correo para pedir que eliminemos tu información de contacto." : "You can reply to request deletion of your contact information."}</p>
+      <hr style="border:none;border-top:1px solid #dbe3ea;margin:24px 0">
+      <p style="font-size:12px;color:#5b6777">${locale === "es" ? "Recibes este correo porque pediste un resultado de calculadora en SeguroTools. Puedes responder a este correo para pedir que eliminemos tu información de contacto." : "You are receiving this email because you requested a calculator result on SeguroTools. You can reply to request deletion of your contact information."}</p>
+      <p style="font-size:12px;color:#5b6777"><a href="https://segurotools.com/${locale}/contact/">${locale === "es" ? "Contacto" : "Contact"}</a> | <a href="https://segurotools.com/${locale}/privacy/">${locale === "es" ? "Privacidad" : "Privacy"}</a> | <a href="https://segurotools.com/${locale}/disclaimer/">${locale === "es" ? "Aviso" : "Disclaimer"}</a></p>
     </div>
   `;
+}
+
+function renderUserText({ payload, locale }) {
+  const rows = Array.isArray(payload.rows) ? payload.rows : [];
+  const notes = Array.isArray(payload.notes) ? payload.notes : [];
+  const lines = [
+    "SeguroTools | segurotools.com",
+    "",
+    payload.title || "Insurance report",
+    "",
+    locale === "es"
+      ? "Solicitaste este reporte educativo en SeguroTools. No reemplaza asesoría profesional ni una cotización oficial."
+      : "You requested this educational report from SeguroTools. It does not replace professional advice or an official quote.",
+    "",
+    `${locale === "es" ? "Resultado" : "Result"}: ${payload.total || ""}`,
+    "",
+    locale === "es" ? "Desglose:" : "Breakdown:",
+    ...rows.map(([label, value]) => `${label}: ${formatValue(value)}`),
+    "",
+    locale === "es" ? "Notas:" : "Notes:",
+    ...notes.map((note) => `- ${note}`),
+    "",
+    `${locale === "es" ? "Calculadora" : "Calculator"}: ${payload.page || "https://segurotools.com/"}`,
+    locale === "es"
+      ? "Recibes este correo porque pediste un resultado de calculadora en SeguroTools. Responde a este correo para pedir que eliminemos tu información de contacto."
+      : "You are receiving this email because you requested a calculator result on SeguroTools. Reply to request deletion of your contact information.",
+    `https://segurotools.com/${locale}/contact/`,
+    `https://segurotools.com/${locale}/privacy/`,
+  ];
+  return lines.join("\n");
 }
 
 function renderOwnerEmail({ email, payload, consent }) {
@@ -147,6 +202,29 @@ function renderOwnerEmail({ email, payload, consent }) {
       <p><strong>Page:</strong> <a href="${clean(payload.page || "")}">${clean(payload.page || "")}</a></p>
     </div>
   `;
+}
+
+function renderOwnerText({ email, payload, consent }) {
+  return [
+    "New SeguroTools calculator lead",
+    `Email: ${email}`,
+    `Consent: ${consent ? "yes" : "no"}`,
+    `Calculator: ${payload.title || payload.calculator || ""}`,
+    `Result: ${payload.total || ""}`,
+    `Locale: ${payload.locale || ""}`,
+    `Page: ${payload.page || ""}`,
+  ].join("\n");
+}
+
+function formatValue(value) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0,
+    }).format(value);
+  }
+  return value;
 }
 
 function isEmail(email) {
