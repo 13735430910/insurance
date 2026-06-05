@@ -16,6 +16,7 @@ const labels = {
     sending: "Sending...",
     sent: "Report sent. Check your inbox.",
     sendFail: "Could not send right now. The on-page result is still available.",
+    sendFailDetail: "Could not send right now:",
     consentRequired: "Please confirm consent before sending the report.",
   },
   es: {
@@ -24,6 +25,7 @@ const labels = {
     sending: "Enviando...",
     sent: "Reporte enviado. Revisa tu correo.",
     sendFail: "No se pudo enviar ahora. El resultado en pantalla sigue disponible.",
+    sendFailDetail: "No se pudo enviar ahora:",
     consentRequired: "Confirma el consentimiento antes de enviar el reporte.",
   },
 };
@@ -307,15 +309,29 @@ async function sendReport(form, panel) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, consent, payload, source: "calculator-report" }),
     });
-    if (!response.ok) throw new Error("send failed");
+    if (!response.ok) {
+      const error = await readApiError(response);
+      throw new Error(error);
+    }
     status.textContent = t.sent;
     status.className = "status ok";
   } catch (error) {
-    status.textContent = t.sendFail;
+    status.textContent = error.message && error.message !== "send failed"
+      ? `${t.sendFailDetail} ${error.message}`
+      : t.sendFail;
     status.className = "status err";
   } finally {
     button.disabled = false;
     button.textContent = t.send;
+  }
+}
+
+async function readApiError(response) {
+  try {
+    const data = await response.json();
+    return data.code || data.error || data.detail || "send failed";
+  } catch (_error) {
+    return "send failed";
   }
 }
 

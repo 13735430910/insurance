@@ -45,7 +45,11 @@ export async function onRequestPost({ request, env }) {
       html: ownerHtml,
     });
   } catch (error) {
-    return json({ error: "Email provider failed", detail: String(error.message || error) }, 502);
+    return json({
+      error: "Email provider failed",
+      code: error.code || "email_provider_failed",
+      detail: String(error.message || error),
+    }, 424);
   }
 
   return json({ ok: true });
@@ -85,12 +89,27 @@ async function sendEmail(env, message) {
       }),
     });
     if (!response.ok) {
-      throw new Error(`Resend failed with ${response.status}`);
+      const detail = await safeResponseText(response);
+      throw providerError("resend_request_failed", `Resend failed with ${response.status}: ${detail}`);
     }
     return;
   }
 
-  throw new Error("Configure an EMAIL binding or RESEND_API_KEY");
+  throw providerError("missing_email_provider", "Configure an EMAIL binding or RESEND_API_KEY in Cloudflare Pages production settings");
+}
+
+async function safeResponseText(response) {
+  try {
+    return (await response.text()).slice(0, 500);
+  } catch (_error) {
+    return "";
+  }
+}
+
+function providerError(code, message) {
+  const error = new Error(message);
+  error.code = code;
+  return error;
 }
 
 function renderUserEmail({ payload, locale }) {
