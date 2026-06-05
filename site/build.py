@@ -39,7 +39,7 @@ TEXT = {
         "blog": "Blog",
         "knowledge": "Knowledge Base",
         "states": "State Guides",
-        "about": "About",
+        "about": "About SeguroTools",
         "contact": "Contact",
         "privacy": "Privacy",
         "disclaimer": "Disclaimer",
@@ -65,7 +65,7 @@ TEXT = {
         "blog": "Blog",
         "knowledge": "Base de conocimiento",
         "states": "Guías por estado",
-        "about": "Acerca de",
+        "about": "Acerca de SeguroTools",
         "contact": "Contacto",
         "privacy": "Privacidad",
         "disclaimer": "Aviso",
@@ -1063,11 +1063,106 @@ def calculator_guide(kb: list[dict], lang: str, calc: dict) -> str:
 
 def legal_pages(lang: str) -> dict:
     def about():
-        return page_intro(TEXT[lang]["about"], "Independent insurance education tools for U.S. consumers." if lang == "en" else "Herramientas educativas independientes sobre seguros en EE. UU.", lang) + f"""
-        <section class="section"><div class="container article-body">
-          <p>{'SeguroTools is built as an educational resource: calculators, source shelves, state guides, and bilingual explanations that help readers prepare better questions before buying, appealing, or filing a complaint.' if lang == 'en' else 'SeguroTools es un recurso educativo: calculadoras, fuentes, guías estatales y explicaciones bilingües para preparar mejores preguntas antes de comprar, apelar o presentar una queja.'}</p>
-          <p>{esc(TEXT[lang]['not_advice'])}</p>
-        </div></section>"""
+        if lang == "en":
+            intro = "Independent, source-led insurance education tools for U.S. households."
+            trust_points = [
+                ("Source-first research", "Every guide is anchored to official or public-interest sources before marketplace examples are used."),
+                ("Bilingual clarity", "English and Spanish pages are written for U.S. insurance terms, not translated word-for-word from generic copy."),
+                ("State verification layer", "State pages point readers to insurance departments for current complaint, licensing, rate, market, and disaster information."),
+                ("Calculator transparency", "Tools show educational estimates, assumptions, and limits instead of presenting a quote or purchase recommendation."),
+            ]
+            method_steps = [
+                "Identify the consumer question from calculator use, public-source research, and recurring pain points.",
+                "Check official sources such as federal agencies, NAIC resources, state insurance departments, and program pages.",
+                "Convert the rule into a document checklist, plain-language explanation, calculator input, or state verification step.",
+                "Keep disclaimers visible where an estimate could be confused with legal, tax, financial, medical, or insurance advice.",
+            ]
+            source_note = "The organizations below are referenced as public sources. SeguroTools is independent and is not endorsed, sponsored, or approved by these agencies or organizations."
+            correction = "Corrections, source suggestions, and translation notes can be sent to corrections@segurotools.com or sources@segurotools.com."
+            independence = "SeguroTools does not sell insurance, negotiate coverage, bind policies, or request sensitive documents such as Social Security numbers, medical records, or policy files. The site is designed to help readers prepare better questions before they contact a licensed professional, official marketplace, carrier, or state department."
+            reviewed = "Reviewed and regenerated from the local source library on"
+        else:
+            intro = "Herramientas independientes de educación sobre seguros, guiadas por fuentes, para hogares en EE. UU."
+            trust_points = [
+                ("Investigación con fuentes primero", "Cada guía se apoya en fuentes oficiales o de interés público antes de usar ejemplos comerciales."),
+                ("Claridad bilingüe", "Las páginas en inglés y español explican términos de seguros de EE. UU.; no son traducciones literales genéricas."),
+                ("Capa de verificación estatal", "Las páginas estatales dirigen a departamentos de seguros para quejas, licencias, tarifas, mercado y desastres actuales."),
+                ("Calculadoras transparentes", "Las herramientas muestran estimaciones educativas, supuestos y límites; no son cotizaciones ni recomendaciones de compra."),
+            ]
+            method_steps = [
+                "Identificar la pregunta del consumidor desde calculadoras, fuentes públicas y problemas recurrentes.",
+                "Revisar fuentes oficiales como agencias federales, NAIC, departamentos estatales y páginas de programas.",
+                "Convertir la regla en lista de documentos, explicación clara, campo de calculadora o paso de verificación estatal.",
+                "Mantener avisos visibles cuando una estimación pueda confundirse con asesoría legal, fiscal, financiera, médica o de seguros.",
+            ]
+            source_note = "Las organizaciones siguientes se citan como fuentes públicas. SeguroTools es independiente y no está respaldado, patrocinado ni aprobado por estas agencias u organizaciones."
+            correction = "Correcciones, sugerencias de fuentes y notas de traducción pueden enviarse a corrections@segurotools.com o sources@segurotools.com."
+            independence = "SeguroTools no vende seguros, no negocia cobertura, no emite pólizas y no solicita documentos sensibles como número de Seguro Social, registros médicos o archivos de póliza. El sitio ayuda a preparar mejores preguntas antes de contactar a un profesional autorizado, marketplace oficial, compañía o departamento estatal."
+            reviewed = "Revisado y regenerado desde la biblioteca local de fuentes el"
+        authority_cards = [
+            ("NAIC", "Consumer resources and state insurance department directory", "https://content.naic.org/consumer"),
+            ("CMS", "HealthCare.gov, Marketplace, and federal health program information", "https://www.healthcare.gov/"),
+            ("Medicare.gov", "Medicare coverage and plan education", "https://www.medicare.gov/"),
+            ("FTC", "Consumer protection, scams, and funeral rule resources", "https://consumer.ftc.gov/"),
+            ("FEMA", "Flood and disaster preparedness resources", "https://www.floodsmart.gov/"),
+            ("IRS", "Tax source material for income and subsidy-related worksheets", "https://www.irs.gov/"),
+            ("SBA", "Small business risk and cybersecurity education", "https://www.sba.gov/"),
+            ("State DOIs", "State insurance departments for complaints, licensing, and local rules", rel(f"{states_base(lang)}/index.html", lang)),
+        ]
+        trust_cards = "".join(f'<article class="card"><h3>{esc(title)}</h3><p>{esc(text)}</p></article>' for title, text in trust_points)
+        source_cards = "".join(f'<article class="card"><h3><a href="{esc(url)}">{esc(label)}</a></h3><p>{esc(desc)}</p></article>' for label, desc, url in authority_cards)
+        method_list = "".join(f"<li>{esc(step)}</li>" for step in method_steps)
+        stats = f"""
+        <section class="section">
+          <div class="container grid cols-3">
+            {stat_card('25', 'knowledge topics with source shelves', 'temas con fuentes documentadas', lang)}
+            {stat_card('12', 'state verification guides', 'guías estatales de verificación', lang)}
+            {stat_card('2', 'English and Spanish content paths', 'rutas de contenido en inglés y español', lang)}
+          </div>
+        </section>
+        """
+        return page_intro(TEXT[lang]["about"], intro, lang) + f"""
+        <section class="section">
+          <div class="container two-col">
+            <article class="article-body">
+              <p>{esc(independence)}</p>
+              <p class="disclaimer">{esc(TEXT[lang]['not_advice'])}</p>
+              <h2>{'Why readers can evaluate our work' if lang == 'en' else 'Por qué los lectores pueden evaluar nuestro trabajo'}</h2>
+              <p>{'Trust on SeguroTools comes from visible sources, clear limits, dated review notes, bilingual explanations, and links to official channels. We avoid claiming that a single calculator can choose a policy or that a static page can replace current state rules.' if lang == 'en' else 'La confianza en SeguroTools viene de fuentes visibles, límites claros, fechas de revisión, explicaciones bilingües y enlaces a canales oficiales. Evitamos afirmar que una calculadora elige una póliza o que una página estática reemplaza reglas estatales actuales.'}</p>
+              <ol>{method_list}</ol>
+              <h2>{'Independence and corrections' if lang == 'en' else 'Independencia y correcciones'}</h2>
+              <p>{esc(correction)}</p>
+              <p class="small">{esc(reviewed)} {TODAY}.</p>
+            </article>
+            <aside class="sidebar card">
+              <h3>{'Compliance position' if lang == 'en' else 'Posición de cumplimiento'}</h3>
+              <p>{'Educational publisher. No insurance sales. No policy negotiation. No carrier ranking sold as advice. Public-source references are used for verification, not affiliation.' if lang == 'en' else 'Publicador educativo. No vende seguros. No negocia pólizas. No presenta rankings comerciales como asesoría. Las fuentes públicas se usan para verificación, no afiliación.'}</p>
+              <p><a class="button ghost" href="{rel('author/index.html', lang)}">{esc(TEXT[lang]['author'])}</a></p>
+              <p><a class="button ghost" href="{rel('contact/index.html', lang)}">{esc(TEXT[lang]['contact'])}</a></p>
+            </aside>
+          </div>
+        </section>
+        {stats}
+        <section class="section alt">
+          <div class="container">
+            <div class="section-head">
+              <div><p class="eyebrow">{'Editorial safeguards' if lang == 'en' else 'Controles editoriales'}</p><h2>{'Built for source review, not sales pressure' if lang == 'en' else 'Diseñado para revisar fuentes, no para presión de venta'}</h2></div>
+              <p>{'These signals help users, search engines, and ad reviewers understand the site purpose without implying a government endorsement.' if lang == 'en' else 'Estas señales ayudan a usuarios, buscadores y revisores de anuncios a entender el propósito sin insinuar respaldo gubernamental.'}</p>
+            </div>
+            <div class="grid cols-4">{trust_cards}</div>
+          </div>
+        </section>
+        <section class="section">
+          <div class="container">
+            <div class="section-head">
+              <div><p class="eyebrow">{'Referenced public sources' if lang == 'en' else 'Fuentes públicas citadas'}</p><h2>{'Official-source shelf' if lang == 'en' else 'Biblioteca de fuentes oficiales'}</h2></div>
+              <p>{esc(source_note)}</p>
+            </div>
+            <div class="grid cols-4">{source_cards}</div>
+            <p class="small">{esc(source_note)}</p>
+          </div>
+        </section>
+        """
 
     def contact():
         intro = "Questions, corrections, source suggestions, and privacy requests." if lang == "en" else "Preguntas, correcciones, sugerencias de fuentes y solicitudes de privacidad."
