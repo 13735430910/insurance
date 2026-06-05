@@ -119,8 +119,10 @@ After the first deployment, add `segurotools.com` under Cloudflare Pages > `segu
 `build.py` reads:
 
 ```text
-../reddit_crawler/reports/knowledge_base/knowledge_items.jsonl
+data/knowledge_items.jsonl
 ```
+
+For local research refreshes, replace `site/data/knowledge_items.jsonl` with the latest crawler export from `../reddit_crawler/reports/knowledge_base/knowledge_items.jsonl`, then rebuild and commit.
 
 The generated site includes:
 

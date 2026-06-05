@@ -3,6 +3,7 @@
 Build a bilingual static insurance education site for Cloudflare Pages.
 
 Input:
+  data/knowledge_items.jsonl
   ../reddit_crawler/reports/knowledge_base/knowledge_items.jsonl
 
 Output:
@@ -21,7 +22,9 @@ ROOT = Path(__file__).resolve().parent
 REPO = ROOT.parent
 DIST = ROOT / "dist"
 ASSETS = ROOT / "assets"
-KB_PATH = REPO / "reddit_crawler" / "reports" / "knowledge_base" / "knowledge_items.jsonl"
+SITE_KB_PATH = ROOT / "data" / "knowledge_items.jsonl"
+CRAWLER_KB_PATH = REPO / "reddit_crawler" / "reports" / "knowledge_base" / "knowledge_items.jsonl"
+KB_PATHS = (SITE_KB_PATH, CRAWLER_KB_PATH)
 SITE_URL = "https://segurotools.com"
 TODAY = date.today().isoformat()
 
@@ -306,9 +309,11 @@ def copy_assets() -> None:
 
 
 def load_knowledge() -> list[dict]:
-    if not KB_PATH.exists():
-        raise SystemExit(f"Missing knowledge export: {KB_PATH}")
-    with KB_PATH.open(encoding="utf-8") as f:
+    kb_path = next((path for path in KB_PATHS if path.exists()), None)
+    if not kb_path:
+        checked = ", ".join(str(path) for path in KB_PATHS)
+        raise SystemExit(f"Missing knowledge export. Checked: {checked}")
+    with kb_path.open(encoding="utf-8") as f:
         rows = [json.loads(line) for line in f if line.strip()]
     return sorted(rows, key=lambda row: row.get("priority", 999))
 
